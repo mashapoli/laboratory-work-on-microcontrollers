@@ -11,7 +11,7 @@ Date    : 4/15/2021
 Author  : Bystrova Maria
 Company : 
 Comments: 
-The program displays the number of the pressed key
+The program displays the number of the pressed key on the LCD module screen 
 
 
 Chip type               : ATmega328P
@@ -24,13 +24,19 @@ Data Stack size         : 512
 
 #include <mega328p.h>
 #include <delay.h>
+#include <alcd.h>
 
-
-void main(void)
-{
+void main(void) {
   // Declare your local variables here
   unsigned char upper_tire, button_code , button_number, i;
   unsigned char *data = (unsigned char*)0x0100;
+
+  // Port D initialization
+  // Function: Bit7=In Bit6=In Bit5=In Bit4=In Bit3=In Bit2=In Bit1=In Bit0=In
+  DDRD=(0<<DDD7) | (0<<DDD6) | (0<<DDD5) | (0<<DDD4) | (0<<DDD3) | (0<<DDD2) | (0<<DDD1) | (0<<DDD0);
+  // State: Bit7=T Bit6=T Bit5=T Bit4=T Bit3=T Bit2=T Bit1=T Bit0=T
+  PORTD=(0<<PORTD7) | (0<<PORTD6) | (0<<PORTD5) | (0<<PORTD4) | (0<<PORTD3) | (0<<PORTD2) | (0<<PORTD1) | (0<<PORTD0);
+ 
 
   // Input/Output Ports initialization
   // Port B initialization
@@ -39,8 +45,24 @@ void main(void)
   // State: Bit7=T Bit6=T Bit5=T Bit4=T Bit3=T Bit2=T Bit1=T Bit0=T
   PORTB=(1<<PORTB7) | (1<<PORTB6) | (1<<PORTB5) | (1<<PORTB4) | (1<<PORTB3) | (1<<PORTB2) | (1<<PORTB1) | (1<<PORTB0);
 
-  while(1) {
+  // Alphanumeric LCD initialization
+  // Connections are specified in the
+  // Project|Configure|C Compiler|Libraries|Alphanumeric LCD menu:
+  // RS - PORTB Bit 0
+  // RD - PORTB Bit 1
+  // EN - PORTB Bit 2
+  // D4 - PORTB Bit 4
+  // D5 - PORTB Bit 5
+  // D6 - PORTB Bit 6
+  // D7 - PORTB Bit 7
+  // Characters/line: 16
+  lcd_init(16);
 
+  lcd_clear( );
+  lcd_gotoxy(0, 0);
+  lcd_puts((char *)"Number button : ");
+
+  while(1) {
     upper_tire = 0xff;
 
     for(i=0; i<4; i++) {
@@ -99,7 +121,8 @@ void main(void)
             break;
           default: button_number  = 'X';
         }
-        *data =  button_number ;
+        lcd_gotoxy(0, 1);
+        lcd_putchar(keyPressed);
       }
     }
   }

@@ -2,7 +2,7 @@
 This program was created by the
 CodeWizardAVR V3.12 Advanced
 Automatic Program Generator
-© Copyright 1998-2014 Pavel Haiduc, HP InfoTech s.r.l.
+Â© Copyright 1998-2014 Pavel Haiduc, HP InfoTech s.r.l.
 http://www.hpinfotech.com
 
 Project : lcd
@@ -23,21 +23,20 @@ data Stack size         : 512
 *******************************************************/
 
 #include <mega328p.h>
-
 #include <delay.h>
 
-//lcd Functions declaration
+#define LCD_EN PORTC |= 1 << PORTC2
+#define LCD_DIS PORTC &= ~(1 << PORTC2)
+#define LCD_RS_DATA PORTC |= 1 << PORTC0
+#define LCD_RS_CMD PORTC &= ~(1 << PORTC0)
+
+//LCD functions declaration
 void lcd_init(void);
 void lcd_write_cmd(unsigned char cmd);
 void lcd_write_data(unsigned char data);
 
-void lcd_display_string(char row, char column, flash unsigned char * string);
+void lcd_display_string(char row, char column, unsigned char * string);
 void lcd_cursor(char row, char column);
-
-#define LCD_EN PORTC |= 1 << 2
-#define LCD_DIS PORTC &= ~(1 << 2)
-#define LCD_RS_DATA PORTC |= 1 << 0
-#define LCD_RS_CMD PORTC &= ~(1 << 0)
 
 void main(void) {
 
@@ -76,8 +75,10 @@ void main(void) {
 //Initialize the lcd driver
 void lcd_init(void) {
   delay_ms(30); // wait 30ms
-  lcd_write_cmd(0x38); // 8-bit, 2 lines
-  lcd_write_cmd(0x0c); // display ON, cursor OFF
+  lcd_write_cmd(0x00111000); // 8-bit, 2 lines
+  lcd_write_cmd(0x00000001);
+  delay_ms(30);
+  lcd_write_cmd(0x0001100); // display ON, cursor OFF
 }
 
 //Write a command instruction to the lcd 
@@ -102,7 +103,7 @@ void lcd_write_data(unsigned char data) {
 }
 
 //Display a string at the specified row and column
-void lcd_display_string(char row, char column, flash unsigned char * string) {
+void lcd_display_string(char row, char column, unsigned char * string) {
   lcd_cursor(row, column);
   while ( * string)
     lcd_write_data( * string++);
@@ -111,13 +112,13 @@ void lcd_display_string(char row, char column, flash unsigned char * string) {
 //Position the lcd cursor at row and column
 void lcd_cursor(char row, char column) {
   switch (row) {
-  case 1:
-    lcd_write_cmd(0x80 + column - 1);
-    break;
-  case 2:
-    lcd_write_cmd(0xc0 + column - 1);
-    break;
-  default:
-    break;
+    case 1:
+      lcd_write_cmd(0x10000000 + column - 1);
+      break;
+    case 2:
+      lcd_write_cmd(0x11000000 + column - 1);
+      break;
+    default:
+      break;
   }
 }
